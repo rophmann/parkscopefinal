@@ -3,12 +3,12 @@
       <h2 style="font-size: 20px;">Фильтры</h2>
       <div class="filter-group">
          <label class="label"><span>Расстояние</span> <span class="grey-text">До {{ distance }} км</span></label>
-         <input type="range" min="1" max="10" v-model="distance" />
+         <input type="range" value="10" min="1" max="100" v-model="distance" />
       </div>
 
       <div class="filter-group">
          <label class="label"><span>Цена</span> <span class="grey-text">{{ price }}₽/час</span></label>
-         <input type="range" min="0" max="500" step="10" v-model="price" />
+         <input type="range" value="1" min="0" max="500" step="10" v-model="price" />
       </div>
 
       <div class="filter-group">
@@ -25,22 +25,25 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useStore } from 'vuex'
+import { ref, watch } from 'vue';
+import { useStore } from 'vuex';
 
-const store = useStore()
+const store = useStore();
 
-const distance = ref(store.state.parking.filters.maxDistance)
-const price = ref(store.state.parking.filters.maxPrice)
-const onlyAvailable = ref(store.state.parking.filters.onlyAvailable)
+const distance = ref(store.state.parking.filters.maxDistance);
+const price = ref(store.state.parking.filters.maxPrice);
+const onlyAvailable = ref(store.state.parking.filters.onlyAvailable);
 
-const applyFilters = () => {
+// При изменении сразу обновляем фильтры в Vuex
+watch([distance, price, onlyAvailable], ([newDist, newPrice, newOnlyAvail]) => {
   store.commit('parking/SET_FILTERS', {
-    maxDistance: distance.value,
-    maxPrice: price.value,
-    onlyAvailable: onlyAvailable.value
-  })
-}
+    maxDistance: newDist,
+    maxPrice: newPrice,
+    onlyAvailable: newOnlyAvail,
+  });
+});
+
+
 </script>
 
 <style scoped>

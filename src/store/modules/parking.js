@@ -11,6 +11,7 @@ const state = {
       places: 24,
       selected: false,
       distance: null,
+      availablePlaces: 1
     },
     {
       id: 2,
@@ -21,6 +22,7 @@ const state = {
       places: 12,
       selected: false,
       distance: null,
+      availablePlaces: 1
     },
     {
       id: 3,
@@ -31,6 +33,7 @@ const state = {
       places: 32,
       selected: false,
       distance: null,
+      availablePlaces: 0
     },
   ],
   selectedParking: null,
@@ -64,6 +67,9 @@ const mutations = {
   SET_FILTERS(state, filters) {
     state.filters = { ...state.filters, ...filters };
   },
+  SET_PARKINGS(state, parkings) {
+    state.parkings = parkings;
+  },  
 
   SET_USER_POSITION(state, position) {
     state.userPosition = position;
@@ -71,11 +77,12 @@ const mutations = {
 
   UPDATE_PARKING_DISTANCES(state, { userPosition }) {
     if (!userPosition) return;
-
+  
     state.parkings.forEach((parking) => {
       if (parking.position) {
-        const distance = calculateDistance(userPosition, parking.position);
-        parking.distance = `${distance.toFixed(1)} км`;
+        const distance = calculateDistance(userPosition, parking.position); // в км (число)
+        parking.distanceValue = distance; // <-- добавляем число для фильтрации
+        parking.distance = `${distance.toFixed(1)} км`; // строка для отображения
       }
     });
   },
@@ -114,6 +121,12 @@ const actions = {
         userPosition: rootState.geolocation.userLocation,
       });
     }
+  },
+  applyFilters({ commit }, filters) {
+    commit('SET_FILTERS', filters);
+  },
+  loadParkings({ commit }, parkings) {
+    commit('SET_PARKINGS', parkings);
   },
 
   selectParking({ commit }, { id }) {
@@ -204,19 +217,16 @@ const getters = {
       );
     });
   },
-  filteredParkings(state) {
-    return state.parkings.filter((parking) => {
-      const distanceOk =
-        !state.filters.maxDistance ||
-        (parking.distance !== null &&
-          parking.distance <= state.filters.maxDistance);
-      const priceOk =
-        !state.filters.maxPrice ||
-        parseFloat(parking.price) <= state.filters.maxPrice;
-      const availabilityOk = !state.filters.onlyAvailable || parking.places > 0;
-      return distanceOk && priceOk && availabilityOk;
+  filteredParkings: (state) => {
+    return state.parkings.filter(parking => {
+      const distance = parking.distance || 0;
+      const matchesDistance = distance <= state.filters.maxDistance;
+      const matchesPrice = parking.price <= state.filters.maxPrice;
+      const matchesAvailability = state.filters.onlyAvailable ? parking.availablePlaces > 0 : true;
+  
+      return matchesDistance && matchesPrice && matchesAvailability;
     });
-  },
+  }
 };
 
 function calculateDistance(pos1, pos2) {

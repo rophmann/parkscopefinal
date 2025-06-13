@@ -17,7 +17,7 @@
             @book-parking="bookParking" @close-detail="closeParkingDetail" />
       </aside>
 
-      <LeafletMap @select-parking="showParkingDetai" ref="map" :parkings="allParkings" />
+      <LeafletMap @select-parking="showParkingDetai" ref="map" :parkings="filteredParkings" />
    </div>
 
 </template>
@@ -96,18 +96,11 @@ const allParkings = computed(() => store.getters['parking/allParkings'])
 
 console.log(allParkings.value);
 
-const filteredParkings = computed(() => {
-   const searchResults = store.getters['parking/searchParkings'](searchQuery.value)
-   const filtered = store.getters['parking/filteredParkings']
+const filteredParkings = computed(() => store.getters['parking/filteredParkings']);
+console.log("filter",filteredParkings.value);
 
-   // Применяем поиск к отфильтрованным парковкам
-   return searchQuery.value
-      ? filtered.filter(p =>
-         p.address.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-         `парковка ${p.id}`.includes(searchQuery.value.toLowerCase())
-      )
-      : filtered
-})
+
+
 
 
 const toggleVoiceInput = async () => {
