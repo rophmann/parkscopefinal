@@ -13,7 +13,7 @@
             :selectedParkingDetail="selectedParkingDetail" @go-to-parking="goToParking"
             @show-parking-detail="showParkingDetail" />
 
-         <ParkingDetail v-if="selectedParkingDetail" :parking="selectedParkingDetail" @build-route="buildRoute"
+         <ParkingDetail v-if="selectedParkingDetail" :parking="selectedParking" @build-route="buildRoute"
             @book-parking="bookParking" @close-detail="closeParkingDetail" />
       </aside>
 
@@ -31,6 +31,7 @@ import SearchContainer from '../components/SearchContainer.vue';
 import VoiceInputButton from '../components/VoiceInputButton.vue'
 import CitySelector from '../components/CitySelector.vue'
 import ParkingDetail from '../components/ParkingDetail.vue'
+
 
 import ParkingList from '../components/ParkingList.vue'
 
@@ -245,7 +246,7 @@ watch(
 
       if (success && parking && map.value) {
          await nextTick();
-         map.value.zoomToParking(parking.position);
+         // map.value.zoomToParking(parking.position);
          showSuggestions.value = false;
       }
    }

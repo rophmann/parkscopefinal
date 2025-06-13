@@ -50,7 +50,9 @@
  
  const clearSelectedParking = () => {
    selectedParkingDetail.value = null;
-   store.commit('parking/SET_SELECTED_PARKING', null);
+   console.log(store.commit('parking/SET_SELECTED_PARKING_DETAIL', null));
+   
+   store.commit('parking/SET_SELECTED_PARKING_DETAIL', null);
  };
  
  const allParkings = computed(() => store.state.parking.parkings || []);

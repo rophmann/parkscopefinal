@@ -50,12 +50,15 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
    parking: {
       type: Object,
       required: true
    }
 })
+
+
+
 
 defineEmits(['build-route', 'book-parking'])
 </script>

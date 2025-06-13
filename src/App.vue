@@ -32,6 +32,10 @@ import axios from 'axios'
   padding: 0;
 }
 
+ .leaflet-routing-alternatives-container {
+  display: none !important;
+} 
+
 :where(body, h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd) {
   margin: 0;
 }

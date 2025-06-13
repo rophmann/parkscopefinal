@@ -40,6 +40,8 @@
      console.error('Ошибка голосового ввода:', error)
    }
  }
+
+ 
  </script>
  
  <style lang="scss" scoped>

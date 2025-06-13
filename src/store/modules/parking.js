@@ -92,15 +92,23 @@ const mutations = {
   },
 
   SET_ROUTE_CONTROL(state, control) {
-    if (state.routeControl) {
-      state.routeControl.remove();
-    }
+    // if (state.routeControl) {
+    //   state.routeControl.remove();
+    // }
     state.routeControl = control;
   },
 
+  // CLEAR_ROUTE(state) {
+  //   if (state.routeControl) {
+  //     state.routeControl.remove();
+  //     state.routeControl = null;
+  //   }
+  //   state.isRouting = false;
+  // },
   CLEAR_ROUTE(state) {
     if (state.routeControl) {
-      state.routeControl.remove();
+      state.routeControl.off();  // удаляем все слушатели маршрута
+      state.routeControl.remove(); // удаляем контрол с карты
       state.routeControl = null;
     }
     state.isRouting = false;
@@ -129,8 +137,8 @@ const actions = {
     commit('SET_PARKINGS', parkings);
   },
 
-  selectParking({ commit }, { id }) {
-    commit("SELECT_PARKING", { id });
+  selectParking({ commit }, payload) {
+    commit('SELECT_PARKING', payload)
   },
 
   setUserPosition({ commit }, position) {
@@ -169,16 +177,9 @@ const actions = {
         draggableWaypoints: false,
         fitSelectedRoutes: true,
         lineOptions: {
-          styles: [{ color: "#E25319", opacity: 0.7, weight: 3 }],
+          styles: [{ color: "#0b02fd", opacity: 0.7, weight: 3 }],
         },
-        createMarker: (i, wp) => {
-          const marker = L.marker(wp.latLng, {
-            icon: i === 0 ? icons.user : icons.selectedParking,
-            draggable: false,
-          });
-          marker.bindPopup(null); // Явно отключаем popup
-          return marker;
-        },
+        createMarker: () => null,
 
         router: L.Routing.osrmv1({
           serviceUrl: "https://router.project-osrm.org/route/v1",
@@ -198,7 +199,9 @@ const actions = {
   cancelRoute({ commit }) {
     commit("CLEAR_ROUTE");
     commit("CLEAR_SELECTED_PARKING_DETAIL");
-  },
+    commit("CLEAR_SELECTED_PARKING");
+    commit("CLEAR_SELECTED_PARKING_DETAIL");
+  }
 };
 
 const getters = {
