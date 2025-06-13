@@ -2,68 +2,17 @@
    <div class="wrap">
       <aside class="aside" :class="{ 'mobile-detail-view': selectedParkingDetail }">
          <div class="aside__header">
-            <div class="search-container">
-               <button v-if="selectedParkingDetail" class="back-button"
-               @click="() => { selectedParkingDetail = null, selectedParking = null }">
-               <img src="/public/icons/arrow.svg" alt="">
-            </button>
-               <input v-model="searchQuery" class="header__search" type="text" placeholder="Введите адрес"
-                  @focus="showSuggestions = true" @blur="handleBlur" @keydown.enter="handleEnter">
-
-               <div v-if="showSuggestions && searchQuery" class="suggestions-dropdown">
-                  <div v-for="parking in filteredParkings" :key="parking.id" class="suggestion-item"
-                     @mousedown.prevent="goToParking(parking)">
-                     <div class="suggestion-title">Парковка №{{ parking.id }}</div>
-                     <div class="suggestion-address">{{ parking.address }}</div>
-                     <div class="suggestion-distance">{{ parking.distance }}</div>
-                  </div>
-
-                  <div v-if="filteredParkings.length === 0" class="no-results">
-                     Ничего не найдено
-                  </div>
-               </div>
-            </div>
-
-            <button class="btn btn-voice" @click="toggleVoiceInput" :class="{
-               'active': isListening,
-               'success': lastSuccess,
-               'error': lastError
-            }">
-               <img src="/public/icons/voice.svg" alt="" class="btn-voice__icon">
-               <span v-if="isListening" class="pulse-animation"></span>
-               <span v-if="lastSuccess" class="status-icon">✓</span>
-               <span v-if="lastError" class="status-icon">✗</span>
-            </button>
+            <SearchContainer />
+            <VoiceInputButton />
          </div>
-
-
-         <!-- Блок с городом и геолокацией (только в основном режиме) -->
-         <div v-if="!selectedParkingDetail && userCity" class="aside__address">
-            <div class="city" @click="toggleCityDropdown">
-               <span class="dot">
-                  <img src="/public/icons/dot.svg" alt="">
-               </span>
-               <span class="city__name">{{ selectedCity }}</span>
-               <span class="dropdown-arrow">▼</span>
-            </div>
-
-            <div v-if="showCityDropdown" class="city-dropdown">
-               <div v-for="city in availableCities" :key="city" class="city-option" @click="selectCity(city)">
-                  {{ city }}
-               </div>
-            </div>
-
-            <button class="fetchGEO" @click="fetchCurrentLocation">
-               Текущее местоположение
-            </button>
-         </div>
-
+         <CitySelector />
          <!-- Фильтры (только в основном режиме) -->
          <Filters v-if="!selectedParkingDetail" />
 
          <!-- Основной контент (список парковок) -->
-         <div v-if="!selectedParkingDetail" class="parks">
-            <div v-if="allParkings.length != 0" class="park__title">Найдено парковочных мест {{ allParkings.length }}</div>
+         <!-- <div v-if="!selectedParkingDetail" class="parks">
+            <div v-if="allParkings.length != 0" class="park__title">Найдено парковочных мест {{ allParkings.length }}
+            </div>
             <div v-for="parking in allParkings" :key="parking.id" class="parking-item">
                <div class="left">
                   <div class="parking-header">
@@ -91,57 +40,13 @@
             <div v-if="allParkings.length === 0" class="no-parkings">
                Нет доступных парковок по выбранным фильтрам
             </div>
-         </div>
-
-         <!-- Детальная информация о парковке -->
-         <div v-else class="parking-detail">
-            <div class="parking-image">
-               <img :src="selectedParkingDetail.image || '/public/park.jpg'" alt="Парковка">
-            </div>
-
-            <div class="detail-info">
-               <div class="info-row">
-                  <span class="park__name"> {{ selectedParkingDetail.name }}</span>
-                  <span class="park__price">{{ selectedParkingDetail.price }}₽<span
-                        style="color: #6E7FA1; font-size: 12px;">/час</span></span>
-               </div>
-               <div class="info-row">
-                  <span class="park__addr">
-                     <img src="/public/icons/adrdot.svg" alt="">
-                     {{ selectedParkingDetail.address }}
-                  </span>
-                  <span style="color: #6E7FA1; font-size: 12px;">{{ selectedParkingDetail.distance }}</span>
-               </div>
-
-               <div class="info-row">
-                  <span style="font-size: 14px; color: #0B03FD;">Открыто до 23:00</span>
-               </div>
-
-               <div class="info-row">
-                  <div style="display: flex; flex-direction: column; width: 100%;">
-                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #03FD5F; font-size: 18px;">Свободных мест:</span>
-                        <span style="color: #03FD5F;">{{ selectedParkingDetail.places }}</span>
-                     </div>
-                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #FD0303; font-size: 18px;">Занятых мест:</span>
-                        <span style="color: #FD0303;">{{ selectedParkingDetail.places - 10 }}</span>
-                     </div>
-                  </div>
-               </div>
-            </div>
-
-            <div class="detail-buttons">
-               <button class="route-button" @click="buildRoute">
-                  Проложить маршрут
-               </button>
-               <button class="book-button" @click="bookParking">
-                  Забронировать место
-               </button>
-            </div>
-         </div>
+         </div> -->
+         <ParkingList v-if=!selectedParkingDetail :allParkings="allParkingss"
+            :selectedParkingDetail="selectedParkingDetaill" @go-to-parking="goToParkingg"
+            @show-parking-detail="showParkingDetaill" />
+         <ParkingDetail v-else :parking="selectedParkingDetaill" @build-route="buildRoute"
+            @book-parking="bookParking" />
       </aside>
-
 
       <LeafletMap ref="map" :parkings="allParkings" />
    </div>
@@ -152,6 +57,27 @@ import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import LeafletMap from '@/components/LeafletMap.vue';
 import Filters from '../components/Filters.vue';
+import SearchContainer from '../components/SearchContainer.vue';
+import VoiceInputButton from '../components/VoiceInputButton.vue'
+import CitySelector from '../components/CitySelector.vue'
+import ParkingDetail from '../components/ParkingDetail.vue'
+
+import ParkingList from '../components/ParkingList.vue'
+
+
+const selectedParkingDetaill = computed(() => store.state.parking.selectedParkingDetail)
+const allParkingss = computed(() => store.getters['parking/allParkings'])
+
+const goToParkingg = async (parking) => {
+   await store.dispatch('parking/selectParking', { id: parking.id })
+   const map = store.state.map?.instance
+   if (map) map.zoomToParking(parking.position)
+}
+
+const showParkingDetaill = async (parking) => {
+   store.commit('parking/SET_SELECTED_PARKING_DETAIL', parking)
+   await store.dispatch('parking/selectParking', { id: parking.id })
+}
 
 const store = useStore();
 const map = ref(null);
@@ -356,10 +282,10 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-
 .wrap {
    display: flex;
 }
+
 .aside {
    min-width: 470px;
    background-color: #1d1f25;
@@ -399,44 +325,6 @@ onMounted(async () => {
 }
 
 
-
-.search-container {
-   position: relative;
-   width: 100%;
-   display: flex;
-}
-
-.header__search {
-   width: 100%;
-   padding: 22px 25px 22px 16px;
-   border-radius: 10px;
-   background-color: #040404;
-   background-image: url('/public/icons/search.svg');
-   background-repeat: no-repeat;
-   background-position: right 20px center;
-   color: rgba(255, 255, 255, 0.5);
-   outline: none;
-   border: 0;
-
-   &::placeholder {
-      color: #6E7FA1;
-      font-size: 16px;
-   }
-}
-
-.back-button {
-   background: none;
-   border: none;
-   cursor: pointer;
-   padding: 8px;
-   margin-right: 12px;
-
-   img {
-      width: 24px;
-      height: 24px;
-   }
-}
-
 .btn {
    width: 65px;
    aspect-ratio: 1;
@@ -455,34 +343,8 @@ onMounted(async () => {
    }
 }
 
-.btn-voice {
-   position: relative;
-   background-color: #0B03FD;
-   box-shadow: 0 4px 8px rgba(0, 0, 0, .3);
-
-   &.active {
-      animation: pulse 1.5s infinite;
-   }
-
-   &.success {
-      background-color: #4CAF50;
-   }
-
-   &.error {
-      background-color: #ff5722;
-   }
-}
 .filter-panel {
    margin: 32px 0;
-}
-
-.pulse-animation {
-   position: absolute;
-   width: 100%;
-   height: 100%;
-   border-radius: 16px;
-   background-color: rgba(244, 67, 54, 0.3);
-   animation: pulse 1.5s infinite;
 }
 
 .status-icon {
@@ -493,132 +355,6 @@ onMounted(async () => {
    animation: fadeOut 2s forwards;
 }
 
-.suggestions-dropdown {
-   position: absolute;
-   top: 100%;
-   left: 0;
-   right: 0;
-   max-height: 300px;
-   overflow-y: auto;
-   background: #1E2025;
-   border-radius: 0 0 10px 10px;
-   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-   z-index: 1001;
-}
-
-.suggestion-item {
-   padding: 12px 15px;
-   cursor: pointer;
-   transition: background 0.2s;
-   border-bottom: 1px solid #2a2d35;
-
-   &:hover {
-      background: #2a2d35;
-   }
-}
-
-.suggestion-title {
-   font-weight: bold;
-   color: #fff;
-   margin-bottom: 4px;
-}
-
-.suggestion-address {
-   font-size: 0.9em;
-   color: rgba(255, 255, 255, 0.7);
-   margin-bottom: 4px;
-}
-
-.suggestion-distance {
-   font-size: 0.8em;
-   color: #E25319;
-}
-
-.no-results {
-   padding: 12px 15px;
-   color: rgba(255, 255, 255, 0.5);
-   font-style: italic;
-}
-
-.aside__address {
-   position: relative;
-   display: flex;
-   justify-content: space-between;
-   align-items: center;
-
-   .city {
-      display: flex;
-      align-items: center;
-      column-gap: 8px;
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover {
-         background: rgba(255, 255, 255, 0.2);
-      }
-
-      .city__name {
-         color: #fff;
-         font-size: 14px;
-         font-weight: bold;
-         white-space: nowrap;
-         max-width: 150px;
-         overflow: hidden;
-         text-overflow: ellipsis;
-      }
-
-      .dropdown-arrow {
-         margin-left: 4px;
-         font-size: 10px;
-         color: rgba(255, 255, 255, 0.7);
-         transition: transform 0.2s;
-      }
-   }
-
-   .city-dropdown {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 200px;
-      max-height: 250px;
-      overflow-y: auto;
-      background: #1E2025;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      z-index: 1001;
-      margin-top: 5px;
-
-      .city-option {
-         padding: 10px 15px;
-         color: rgba(255, 255, 255, 0.8);
-         cursor: pointer;
-         transition: all 0.2s;
-
-         &:hover {
-            background: rgba(11, 3, 253, 0.2);
-            color: #fff;
-         }
-      }
-   }
-
-   .fetchGEO {
-      padding: 8px 12px;
-      background: transparent;
-      color: #0B03FD;
-      font-size: 12px;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      transition: all 0.2s;
-
-      &:hover {
-         background: rgba(11, 3, 253, 0.1);
-      }
-   }
-}
 
 .findPark {
    padding: 12px 0;
@@ -732,147 +468,5 @@ onMounted(async () => {
 
 .parking-places {
    color: rgba(255, 255, 255, 0.5);
-}
-
-.no-parkings {
-   color: rgba(255, 255, 255, 0.5);
-   text-align: center;
-   padding: 20px;
-   font-style: italic;
-}
-
-.detail-title {
-   color: #fff;
-   font-size: 20px;
-   margin: 0;
-}
-
-.parking-detail {
-   position: relative;
-   padding-top: 200px;
-   display: flex;
-   flex-direction: column;
-   gap: 20px;
-   padding: 16px;
-   flex: 1;
-   overflow-y: auto;
-}
-
-.parking-image {
-   width: 100%;
-   height: 200px;
-   border-radius: 12px;
-   overflow: hidden;
-
-   img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-   }
-}
-
-.detail-info {
-   display: flex;
-   flex-direction: column;
-   gap: 16px;
-   padding: 16px;
-   border-radius: 12px;
-}
-
-.info-row {
-   display: flex;
-   align-items: center;
-   justify-content: space-between;
-   gap: 12px;
-   color: #fff;
-
-   img {
-      width: 20px;
-      height: 20px;
-   }
-}
-
-.detail-buttons {
-   display: flex;
-   flex-direction: column;
-   gap: 12px;
-   padding-bottom: 20px;
-}
-
-.route-button,
-.book-button {
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   gap: 8px;
-   padding: 16px;
-   border-radius: 12px;
-   border: none;
-   font-weight: bold;
-   cursor: pointer;
-
-   img {
-      width: 20px;
-      height: 20px;
-   }
-}
-
-.route-button {
-   background: #2F2F31;
-   border-radius: 64px;
-   color: white;
-}
-
-.book-button {
-   border-radius: 64px;
-   background: #0B03FD;
-   color: white;
-}
-
-
-.btns {
-   display: flex;
-   column-gap: 8px;
-}
-
-.map,
-.open {
-   padding: 10px 12px;
-   font-size: 12px;
-   font-weight: 700;
-   color: #fff;
-   border-radius: 12px;
-}
-
-.map {
-   background: #2F2F31;
-}
-
-.open {
-   background: #0B03FD;
-}
-
-@keyframes pulse {
-   0% {
-      box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
-   }
-
-   70% {
-      box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
-   }
-
-   100% {
-      box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
-   }
-}
-
-@keyframes fadeOut {
-   0% {
-      opacity: 1;
-   }
-
-   100% {
-      opacity: 0;
-   }
 }
 </style>
