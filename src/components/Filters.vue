@@ -29,6 +29,7 @@ import { ref } from 'vue'
 import { useStore } from 'vuex'
 
 const store = useStore()
+
 const distance = ref(store.state.parking.filters.maxDistance)
 const price = ref(store.state.parking.filters.maxPrice)
 const onlyAvailable = ref(store.state.parking.filters.onlyAvailable)

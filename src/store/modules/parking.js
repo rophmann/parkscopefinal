@@ -204,18 +204,16 @@ const getters = {
       );
     });
   },
-  filteredParkings: (state) => {
+  filteredParkings(state) {
     return state.parkings.filter((parking) => {
-      const distance = parking.distance; // число или null
-      const price = parseFloat(parking.price);
-
       const distanceOk =
         !state.filters.maxDistance ||
-        (distance !== null && distance <= state.filters.maxDistance);
+        (parking.distance !== null &&
+          parking.distance <= state.filters.maxDistance);
       const priceOk =
-        !state.filters.maxPrice || price <= state.filters.maxPrice;
+        !state.filters.maxPrice ||
+        parseFloat(parking.price) <= state.filters.maxPrice;
       const availabilityOk = !state.filters.onlyAvailable || parking.places > 0;
-
       return distanceOk && priceOk && availabilityOk;
     });
   },

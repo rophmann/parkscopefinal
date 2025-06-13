@@ -5,51 +5,21 @@
             <SearchContainer />
             <VoiceInputButton />
          </div>
-         <CitySelector />
-         <!-- Фильтры (только в основном режиме) -->
+
+         <CitySelector v-if="!selectedParkingDetail" />
          <Filters v-if="!selectedParkingDetail" />
 
-         <!-- Основной контент (список парковок) -->
-         <!-- <div v-if="!selectedParkingDetail" class="parks">
-            <div v-if="allParkings.length != 0" class="park__title">Найдено парковочных мест {{ allParkings.length }}
-            </div>
-            <div v-for="parking in allParkings" :key="parking.id" class="parking-item">
-               <div class="left">
-                  <div class="parking-header">
-                     <h3 class="parking-title">Парковка №{{ parking.id }}</h3>
-                  </div>
-                  <p class="parking-address">
-                     <span class="parking-places">
-                        <img src="/public/icons/adrdot.svg" alt="">
-                     </span> {{ parking.address }}
-                  </p>
-                  <p style="color: #fff;">Свободных мест: {{ parking.places }}</p>
-               </div>
-               <div class="right">
-                  <div class="parking-footer">
-                     <span class="parking-price"><span>{{ parking.price }}₽</span> /час</span>
-                     <span class="parking-distance">{{ parking.distance }}</span>
-                     <div class="btns">
-                        <button class="map" @click="goToParking(parking)">Карта</button>
-                        <button class="open" @click="showParkingDetail(parking)">Открыть</button>
-                     </div>
-                  </div>
-               </div>
-            </div>
+         <ParkingList v-if="!selectedParkingDetail" :allParkings="allParkings"
+            :selectedParkingDetail="selectedParkingDetail" @go-to-parking="goToParking"
+            @show-parking-detail="showParkingDetail" />
 
-            <div v-if="allParkings.length === 0" class="no-parkings">
-               Нет доступных парковок по выбранным фильтрам
-            </div>
-         </div> -->
-         <ParkingList v-if=!selectedParkingDetail :allParkings="allParkingss"
-            :selectedParkingDetail="selectedParkingDetaill" @go-to-parking="goToParkingg"
-            @show-parking-detail="showParkingDetaill" />
-         <ParkingDetail v-else :parking="selectedParkingDetaill" @build-route="buildRoute"
-            @book-parking="bookParking" />
+         <ParkingDetail v-if="selectedParkingDetail" :parking="selectedParkingDetail" @build-route="buildRoute"
+            @book-parking="bookParking" @close-detail="closeParkingDetail" />
       </aside>
 
-      <LeafletMap ref="map" :parkings="allParkings" />
+      <LeafletMap @select-parking="showParkingDetai" ref="map" :parkings="allParkings" />
    </div>
+
 </template>
 
 <script setup>
@@ -65,8 +35,9 @@ import ParkingDetail from '../components/ParkingDetail.vue'
 import ParkingList from '../components/ParkingList.vue'
 
 
-const selectedParkingDetaill = computed(() => store.state.parking.selectedParkingDetail)
+// const selectedParkingDetaill = computed(() => store.state.parking.selectedParkingDetail)
 const allParkingss = computed(() => store.getters['parking/allParkings'])
+const selectedParking = computed(() => store.state.parking.selectedParking);
 
 const goToParkingg = async (parking) => {
    await store.dispatch('parking/selectParking', { id: parking.id })
@@ -94,6 +65,11 @@ const selectedParkingDetail = computed({
    }
 });
 
+const closeParkingDetail = () => {
+  selectedParkingDetail.value = null;
+  store.commit('parking/CLEAR_SELECTED_PARKING');
+};
+
 const availableCities = computed(() => {
    const cities = [
       'Москва', 'Санкт-Петербург', 'Ростов-на-Дону',
@@ -104,6 +80,12 @@ const availableCities = computed(() => {
 
    return [...cities, ...customCities];
 });
+
+const showParkingDetai = async (parking) => {
+  selectedParkingDetail.value = parking;
+  store.commit('parking/SELECT_PARKING', { id: parking.id });
+  await store.dispatch('parking/selectParking', { id: parking.id });
+};
 
 const userCity = computed(() => store.getters['geolocation/userCity']);
 

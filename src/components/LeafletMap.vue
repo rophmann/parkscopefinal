@@ -14,6 +14,14 @@ const props = defineProps({
   }
 })
 
+
+
+const emit = defineEmits(['select-parking'])
+
+const handleMarkerClick = (parking) => {
+  emit('select-parking', parking)
+}
+
 const store = useStore()
 const mapRef = ref(null)
 const cityMarker = ref(null)
@@ -109,6 +117,10 @@ const cancelRoute = () => {
   store.dispatch('parking/cancelRoute'); // Это очистит и маршрут и детали
 };
 
+function onMarkerClick(parkingId) {
+  store.commit('parking/SELECT_PARKING', { id: parkingId });
+}
+
 
 onMounted(async () => {
   await store.dispatch('geolocation/fetchUserLocation')
@@ -125,7 +137,7 @@ defineExpose({ zoomToParking, zoomToLocation })
         url="https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=QC6BzC3o5furecFhRPc9DuwifZ7Z5dHqhnmSbWHlFPaJzv8xJvWi8tqsy4zNqQvd"
         attribution='&copy; OpenStreetMap' />
       <l-marker v-for="parking in displayedParkings" :key="parking.id" :lat-lng="parking.position"
-        :icon="parking.selected ? icons.selectedParking : icons.parking" @click="selectParking(parking.id)" />
+        :icon="parking.selected ? icons.selectedParking : icons.parking"  @click="handleMarkerClick(parking)" />
 
       <l-marker v-if="userPosition" :lat-lng="userPosition" :icon="icons.user" />
     </l-map>
