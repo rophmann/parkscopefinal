@@ -11,7 +11,7 @@ const state = {
       places: 24,
       selected: false,
       distance: null,
-      availablePlaces: 1
+      availablePlaces: 2
     },
     {
       id: 2,
@@ -37,6 +37,8 @@ const state = {
     },
   ],
   selectedParking: null,
+  selectedParkingDetail: null,
+  bookingView: false,
   userPosition: null,
   isRouting: false,
   routeControl: null,
@@ -56,6 +58,16 @@ const mutations = {
       state.selectedParking = { ...parking };
     } else {
       state.selectedParking = null;
+    }
+  },
+
+  SET_SELECTED_PARKING_DETAIL(state, payload) {
+    state.selectedParkingDetail = payload;
+  },
+  SET_BOOKING_VIEW(state, payload) {
+    state.bookingView = payload;
+    if (payload === true) {
+      state.selectedParkingDetail = null;
     }
   },
 

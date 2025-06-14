@@ -1,6 +1,6 @@
 <template>
    <div class="search-container">
-     <button v-if="selectedParkingDetail" class="back-button" @click="clearSelectedParking">
+     <button v-if="selectedParkingDetail || booking" class="back-button" @click="clearSelectedParking">
        <img src="/public/icons/arrow.svg" alt="" />
      </button>
  
@@ -42,6 +42,10 @@
  const store = useStore();
  const searchQuery = ref('');
  const showSuggestions = ref(false);
+ const booking = computed(() => store.state.parking.bookingView)
+
+ console.log(booking.value);
+ 
  
  const selectedParkingDetail = computed({
    get: () => store.state.parking.selectedParkingDetail,
@@ -49,11 +53,9 @@
  });
  
  const clearSelectedParking = () => {
-   selectedParkingDetail.value = null;
-   console.log(store.commit('parking/SET_SELECTED_PARKING_DETAIL', null));
-   
-   store.commit('parking/SET_SELECTED_PARKING_DETAIL', null);
- };
+  selectedParkingDetail.value = null;
+  store.commit('parking/SET_BOOKING_VIEW', false);
+};
  
  const allParkings = computed(() => store.state.parking.parkings || []);
  

@@ -42,7 +42,7 @@
          <button class="route-button" @click="$emit('build-route')">
             Проложить маршрут
          </button>
-         <button class="book-button" @click="$emit('book-parking')">
+         <button class="book-button" @click="openBooking">
             Забронировать место
          </button>
       </div>
@@ -50,6 +50,9 @@
 </template>
 
 <script setup>
+import { useStore } from 'vuex';
+
+
 const props = defineProps({
    parking: {
       type: Object,
@@ -58,6 +61,11 @@ const props = defineProps({
 })
 
 
+const store = useStore();
+
+const openBooking = () => {
+  store.commit('parking/SET_BOOKING_VIEW', true);
+};
 
 
 defineEmits(['build-route', 'book-parking'])

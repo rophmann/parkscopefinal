@@ -5,16 +5,21 @@
             <SearchContainer />
             <VoiceInputButton />
          </div>
+         <div v-if="!store.state.parking.selectedParkingDetail && !store.state.parking.bookingView">
 
-         <CitySelector v-if="!selectedParkingDetail" />
-         <Filters v-if="!selectedParkingDetail" />
 
-         <ParkingList v-if="!selectedParkingDetail" :allParkings="allParkings"
-            :selectedParkingDetail="selectedParkingDetail" @go-to-parking="goToParking"
-            @show-parking-detail="showParkingDetail" />
+            <CitySelector v-if="!selectedParkingDetail" />
+            <Filters v-if="!selectedParkingDetail" />
 
-         <ParkingDetail v-if="selectedParkingDetail" :parking="selectedParking" @build-route="buildRoute"
-            @book-parking="bookParking" @close-detail="closeParkingDetail" />
+            <ParkingList v-if="!selectedParkingDetail" :allParkings="allParkings"
+               :selectedParkingDetail="selectedParkingDetail" @go-to-parking="goToParking"
+               @show-parking-detail="showParkingDetail" />
+         </div>
+
+         <ParkingDetail v-else-if="store.state.parking.selectedParkingDetail" :parking="selectedParking"
+            @build-route="buildRoute" @book-parking="bookParking" @close-detail="closeParkingDetail" />
+         <BookingView v-else-if="store.state.parking.bookingView" :parking="selectedParking"
+            @close="store.commit('parking/SET_BOOKING_VIEW', false)" />
       </aside>
 
       <LeafletMap @select-parking="showParkingDetai" ref="map" :parkings="filteredParkings" />
@@ -31,6 +36,7 @@ import SearchContainer from '../components/SearchContainer.vue';
 import VoiceInputButton from '../components/VoiceInputButton.vue'
 import CitySelector from '../components/CitySelector.vue'
 import ParkingDetail from '../components/ParkingDetail.vue'
+import BookingView from '../components/BookingView.vue';
 
 
 import ParkingList from '../components/ParkingList.vue'
@@ -39,7 +45,8 @@ import ParkingList from '../components/ParkingList.vue'
 // const selectedParkingDetaill = computed(() => store.state.parking.selectedParkingDetail)
 const allParkingss = computed(() => store.getters['parking/allParkings'])
 const selectedParking = computed(() => store.state.parking.selectedParking);
-
+const showBookingView = ref(false);
+const showParkPanel = ref(false)
 const goToParkingg = async (parking) => {
    await store.dispatch('parking/selectParking', { id: parking.id })
    const map = store.state.map?.instance
@@ -67,8 +74,8 @@ const selectedParkingDetail = computed({
 });
 
 const closeParkingDetail = () => {
-  selectedParkingDetail.value = null;
-  store.commit('parking/CLEAR_SELECTED_PARKING');
+   selectedParkingDetail.value = null;
+   store.commit('parking/CLEAR_SELECTED_PARKING');
 };
 
 const availableCities = computed(() => {
@@ -82,10 +89,17 @@ const availableCities = computed(() => {
    return [...cities, ...customCities];
 });
 
+const bookParking = () => {
+   if (selectedParkingDetail.value && showParkPanel) {
+      showBookingView.value = true;
+   }
+};
+
 const showParkingDetai = async (parking) => {
-  selectedParkingDetail.value = parking;
-  store.commit('parking/SELECT_PARKING', { id: parking.id });
-  await store.dispatch('parking/selectParking', { id: parking.id });
+   showParkPanel.value = true
+   selectedParkingDetail.value = parking;
+   store.commit('parking/SELECT_PARKING', { id: parking.id });
+   await store.dispatch('parking/selectParking', { id: parking.id });
 };
 
 const userCity = computed(() => store.getters['geolocation/userCity']);
@@ -98,7 +112,7 @@ const allParkings = computed(() => store.getters['parking/allParkings'])
 console.log(allParkings.value);
 
 const filteredParkings = computed(() => store.getters['parking/filteredParkings']);
-console.log("filter",filteredParkings.value);
+console.log("filter", filteredParkings.value);
 
 
 
@@ -225,12 +239,7 @@ const buildRoute = async () => {
    }
 };
 // Бронирование места
-const bookParking = () => {
-   if (selectedParkingDetail.value) {
-      console.log('Бронирование места на парковке', selectedParkingDetail.value.id);
-      // Здесь можно добавить логику бронирования
-   }
-};
+
 
 
 watch(
