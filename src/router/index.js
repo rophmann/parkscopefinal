@@ -17,6 +17,11 @@ const routes = [
       name: 'dashboard',
       component: () => import('@/views/Dashboard.vue')
    },
+   {
+      path: '/booking',
+      name: 'booking',
+      component: () => import('@/components/BookingView.vue')
+   },
   
 ]
 const router = createRouter({

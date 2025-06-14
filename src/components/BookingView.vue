@@ -23,6 +23,7 @@
       </div>
 
       <button @click="$emit('close')" class="close-btn">Закрыть</button>
+      <button @click="cancelAllUserBookings" class="cancel-btn">Отменить все бронирования</button>
 
       <Transition name="popup-fade">
          <BookingPopup v-if="showPopup" :slotNumber="selectedSlot" @close="showPopup = false"
@@ -34,6 +35,9 @@
 <script setup>
 import { ref, watch } from 'vue'
 import BookingPopup from './BookingPopup.vue'
+import { useStore } from 'vuex'
+
+const store = useStore()
 
 const props = defineProps({
    parking: Object
@@ -53,15 +57,18 @@ function initParkingPlaces() {
       parkingPlaces.value = []
       return
    }
+
    const total = props.parking.places
-   const free = props.parking.availablePlaces
-   // Заполняем массив с учётом пропсов
+   const occupiedSlots = props.parking.occupiedSlots || []  // массив занятых мест всеми
+   const userSlots = store.getters['user/getUserSlotsForParking'](props.parking.id)
+
    parkingPlaces.value = []
+
    for (let i = 1; i <= total; i++) {
       parkingPlaces.value.push({
          number: i,
-         isOccupied: i > free,
-         isUserCar: false,  // изначально занятые места
+         isOccupied: occupiedSlots.includes(i) || userSlots.includes(i),
+         isUserCar: userSlots.includes(i)
       })
    }
 }
@@ -86,8 +93,30 @@ function handleConfirmBooking(data) {
    if (slot) {
       slot.isOccupied = true
       slot.isUserCar = true
+
+      // Записываем в Vuex, что текущий пользователь занял это место
+      store.dispatch('user/addBooking', {
+         parkingId: props.parking.id, // id текущей парковки
+         slotNumber: selectedSlot.value
+      })
    }
    showPopup.value = false
+}
+
+// Отмена всех бронирований пользователя для текущей парковки
+function cancelAllUserBookings() {
+   const userSlots = store.getters['user/getUserSlotsForParking'](props.parking.id)
+
+   // Удаляем все брони пользователя для этой парковки
+   userSlots.forEach(slotNumber => {
+      store.dispatch('user/removeBooking', {
+         parkingId: props.parking.id,
+         slotNumber
+      })
+   })
+
+   // Обновляем локальный статус парковочных мест
+   initParkingPlaces()
 }
 </script>
 
@@ -200,5 +229,20 @@ function handleConfirmBooking(data) {
 .popup-fade-leave-to {
    opacity: 0;
    transform: scale(0.95);
+}
+
+.cancel-btn {
+  background: #4444ff;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: #2222cc;
 }
 </style>
