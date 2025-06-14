@@ -24,7 +24,7 @@
                <span class="parking-distance">{{ parking.distance }}</span>
                <div class="btns">
                   <button class="map" @click="$emit('go-to-parking', parking)">Карта</button>
-                  <button class="open" @click="$emit('show-parking-detail', parking)">Открыть</button>
+                  <button class="open" @click="openDetail(parking)">Открыть</button>
                </div>
             </div>
          </div>
@@ -37,6 +37,7 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 defineProps({
    allParkings: {
       type: Array,
@@ -47,6 +48,11 @@ defineProps({
       required: false
    }
 })
+const router = useRouter()
+
+function openDetail(parking) {
+  router.push({ name: 'ParkingDetail', params: { id: parking.id } })
+}
 
 defineEmits(['go-to-parking', 'show-parking-detail'])
 </script>

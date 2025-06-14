@@ -6,18 +6,18 @@
 
       <div class="detail-info">
          <div class="info-row">
-            <span class="park__name">{{ parking.name }}</span>
+            <span class="park__name">{{ parking?.name }}</span>
             <span class="park__price">
-               {{ parking.price }}₽<span class="per-hour">/час</span>
+               {{ parking?.price }}₽<span class="per-hour">/час</span>
             </span>
          </div>
 
          <div class="info-row">
             <span class="park__addr">
                <img src="/public/icons/adrdot.svg" alt="" />
-               {{ parking.address }}
+               {{ parking?.address }}
             </span>
-            <span class="distance">{{ parking.distance }}</span>
+            <span class="distance">{{ parking?.distance }}</span>
          </div>
 
          <div class="info-row">
@@ -28,11 +28,11 @@
             <div class="places-info">
                <div class="place-row">
                   <span class="free-label">Свободных мест:</span>
-                  <span class="free-count">{{ parking.places }}</span>
+                  <span class="free-count">{{ parking?.places }}</span>
                </div>
                <div class="place-row">
                   <span class="occupied-label">Занятых мест:</span>
-                  <span class="occupied-count">{{ parking.places - 10 }}</span>
+                  <span class="occupied-count">{{ parking?.places - 10 }}</span>
                </div>
             </div>
          </div>
@@ -50,24 +50,30 @@
 </template>
 
 <script setup>
+import { onMounted, computed } from 'vue'
 import { useStore } from 'vuex';
+import { useRoute } from 'vue-router'
 
-
-const props = defineProps({
-   parking: {
-      type: Object,
-      required: true
-   }
-})
-
-
+const route = useRoute()
 const store = useStore();
 
+
+const parkingId = route.params.id
+const parking = computed(() =>
+  store.getters['parking/allParkings'].find(p => p.id.toString() === parkingId)
+)
+
+
+
+
+
 const openBooking = () => {
-  store.commit('parking/SET_BOOKING_VIEW', true);
+   store.commit('parking/SET_BOOKING_VIEW', true);
 };
 
-
+// onMounted(async () => {
+//   await store.dispatch('parking/selectParking', { id: props.id });
+// });
 defineEmits(['build-route', 'book-parking'])
 </script>
 

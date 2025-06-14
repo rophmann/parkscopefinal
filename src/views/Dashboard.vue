@@ -1,12 +1,12 @@
 <template>
    <div class="wrap">
       <aside class="aside" :class="{ 'mobile-detail-view': selectedParkingDetail }">
+
          <div class="aside__header">
             <SearchContainer />
             <VoiceInputButton />
          </div>
-         <div v-if="!store.state.parking.selectedParkingDetail && !store.state.parking.bookingView">
-
+         <div v-if="$route.name !== 'ParkingDetail'">
 
             <CitySelector v-if="!selectedParkingDetail" />
             <Filters v-if="!selectedParkingDetail" />
@@ -16,10 +16,7 @@
                @show-parking-detail="showParkingDetail" />
          </div>
 
-         <ParkingDetail v-else-if="store.state.parking.selectedParkingDetail" :parking="selectedParking"
-            @build-route="buildRoute" @book-parking="bookParking" @close-detail="closeParkingDetail" />
-         <BookingView v-else-if="store.state.parking.bookingView" :parking="selectedParking"
-            @close="store.commit('parking/SET_BOOKING_VIEW', false)" />
+         <router-view v-else name="aside" />
       </aside>
 
       <LeafletMap @select-parking="showParkingDetai" ref="map" :parkings="filteredParkings" />
@@ -37,6 +34,9 @@ import VoiceInputButton from '../components/VoiceInputButton.vue'
 import CitySelector from '../components/CitySelector.vue'
 import ParkingDetail from '../components/ParkingDetail.vue'
 import BookingView from '../components/BookingView.vue';
+import { useRoute } from 'vue-router'
+const route = useRoute()
+console.log(route.name);
 
 
 import ParkingList from '../components/ParkingList.vue'

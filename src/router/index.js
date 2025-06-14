@@ -1,36 +1,46 @@
-import { createRouter, createWebHistory } from 'vue-router'
-
+import { createRouter, createWebHistory } from "vue-router";
 
 const routes = [
-   {
-      path: '/login',
-      name: 'login',
-      component: () => import('@/views/Login.vue')
-   },
-   {
-      path: '/register',
-      name: 'register',
-      component: () => import('@/views/Register.vue')
-   },
-   {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: () => import('@/views/Dashboard.vue')
-   },
-   {
-      path: '/booking',
-      name: 'booking',
-      component: () => import('@/components/BookingView.vue')
-   },
-  
-]
+  {
+    path: "/login",
+    name: "login",
+    component: () => import("@/views/Login.vue"),
+  },
+  {
+    path: "/register",
+    name: "register",
+    component: () => import("@/views/Register.vue"),
+  },
+  {
+    path: "/dashboard",
+    name: "dashboard",
+    component: () => import("@/views/Dashboard.vue"),
+    children: [
+      {
+        path: 'parking/:id',
+        components: {
+          aside:  () => import("../components/ParkingDetail.vue"),
+        },
+        props: {
+          aside: true,
+        },
+        name: 'ParkingDetail',
+      },
+    ],
+  },
+  {
+    path: "/booking/:id",
+    name: "BookingView",
+    component: () => import("../components/BookingView.vue"),
+    props: true,
+  },
+];
 const router = createRouter({
-   routes,
-   history: createWebHistory()
-})
+  routes,
+  history: createWebHistory(),
+});
 
-export default router
-
+export default router;
 
 // {
 //    path: '/home',
